@@ -48,7 +48,7 @@ fi # Fim do if do dircolor
 ## Aliases (apelidos) diversos
 
 # Desliga o pc
-alias poweroff='sudo pacman -Syyu --noconfirm && shutdown +30'
+alias poweroff='sudo apt update && sudo apt upgrade -y && sudo shutdown +30'
 
 # Editar sources.list
 alias lists='sudo vim /etc/apt/sources.list'
