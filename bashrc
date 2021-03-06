@@ -1,92 +1,145 @@
-#
-# ~/.bashrc
-#
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
 
 # If not running interactively, don't do anything
-[[ $- != *i* ]] && return
+case $- in
+    *i*) ;;
+      *) return;;
+esac
 
-#-----------------------------------------------
-# Configurações Gerais
-#-----------------------------------------------
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
 
-# Se não estiver rodando interativamente, não fazer nada
-[ -z "$PS1" ] && return
+# append to the history file, don't overwrite it
+shopt -s histappend
 
-export TERM="xterm-256color"
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
 
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+#[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
     xterm-color|*-256color) color_prompt=yes;;
 esac
 
-# Não armazenar as linhas duplicadas ou linhas que começam com espaço no historico
-HISTCONTROL=ignoreboth
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+force_color_prompt=yes
 
-# Adicionar ao Historico e não substitui-lo
-shopt -s histappend
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
 
-# Definições do comprimento e tamnho do historico.
-HISTSIZE=1000
-HISTFILESIZE=2000
+if [ "$color_prompt" = yes ]; then
+    prompt_color='\[\033[;32m\]'
+    info_color='\[\033[1;34m\]'
+    prompt_symbol=㉿
+    if [ "$EUID" -eq 0 ]; then # Change prompt colors for root user
+	prompt_color='\[\033[;94m\]'
+	info_color='\[\033[1;31m\]'
+	prompt_symbol=💀
+    fi
+    PS1=$prompt_color'┌──${debian_chroot:+($debian_chroot)──}('$info_color'\u${prompt_symbol}\h'$prompt_color')-[\[\033[0;1m\]\w'$prompt_color']\n'$prompt_color'└─'$info_color'\$\[\033[0m\] '
+    # BackTrack red prompt
+    #PS1='${debian_chroot:+($debian_chroot)}\[\033[01;31m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
 
-#==========================
-# DIVERSOS
-#==========================
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
 
-## Habilitando suporte a cores para o ls e outros aliases
-## Vê se o arquivo existe
+# enable color support of ls, less and man, and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
-test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
 
-## Aliases (apelidos) para comandos
-alias ls='ls --color=auto'
-alias dir='dir --color=auto'
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
-fi # Fim do if do dircolor
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+    alias diff='diff --color=auto'
+    alias ip='ip --color=auto'
 
-## Aliases (apelidos) diversos
+    export LESS_TERMCAP_mb=$'\E[1;31m'     # begin blink
+    export LESS_TERMCAP_md=$'\E[1;36m'     # begin bold
+    export LESS_TERMCAP_me=$'\E[0m'        # reset bold/blink
+    export LESS_TERMCAP_so=$'\E[01;33m'    # begin reverse video
+    export LESS_TERMCAP_se=$'\E[0m'        # reset reverse video
+    export LESS_TERMCAP_us=$'\E[1;32m'     # begin underline
+    export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
+fi
 
-# Desliga o pc
-alias poweroff='sudo apt update && sudo apt upgrade -y && sudo shutdown +30'
+# colored GCC warnings and errors
+#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
-# Editar sources.list
-alias lists='sudo vim /etc/apt/sources.list'
-
-# atualizar o apt-get
-alias upd='sudo apt-get update'
-
-# Reparar o apt-get
-alias aptrepair='sudo apt-get -f install'
-
-# Reparar o dpkg
-alias dpkgrepair='sudo dpkg --configure -a'
-
-#==============================================
-# Aliases para uso no dia-a-dia e testes
-#==============================================
-
-# Testar conexão com ping
-alias google='ping -t 3 -c 5 www.google.com.br' # Ping ao google a cada 3 segundos
-alias uol='ping -t 3 www.uol.com.br' # Ping ao UOL a cada 3 segundos
-
-# Atalho que verifica o DNS
-alias srvdns='cat /etc/resolv.conf | grep nameserver'
-
-# Atalho para ferramenta
+# some more ls aliases
+alias ll='ls -l'
+alias la='ls -A'
+alias l='ls -CF'
+alias upd='sudo apt update && sudo apt upgrade && sudo apt full-upgrade && sudo apt autoclean'
 alias lswv='ls -ZilhAk'
+alias dnsv='cat /etc/resolv.conf | grep namespace'
+alias hx='hexyl'
+alias md='mkdir'
+alias cls='clear'
+alias google='sudo ping google.com -c 5'
+alias hxdos='hx -n64'
+alias hxstub='hx -n64 -s 0x40'
+alias hxcoff='hx -n24 -s 0x80'
+alias hxopt='hx -n96 -s 0x98'
+alias vbash='vim ~/.bashrc'
 
-PS1='[\u@\h \W]\$ '
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
-# Setando teclado automaticamente, descomente esta linha
-# setxkbmap -model pc105 -layout br -variant abnt2
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
 
-(cat ~/.cache/wal/sequences &)
-(cat ~/.cache/wal/sequences &)
-(cat ~/.cache/wal/sequences &)
-(cat ~/.cache/wal/sequences &)
-(cat ~/.cache/wal/sequences &)
-(cat ~/.cache/wal/sequences &)
-(cat ~/.cache/wal/sequences &)
-(cat ~/.cache/wal/sequences &)
-(cat ~/.cache/wal/sequences &)
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
