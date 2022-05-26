@@ -111,7 +111,7 @@ fi
 alias ll='ls -l'
 alias la='ls -A'
 alias l='ls -CF'
-alias upd='sudo pacman -Syy && sudo pacman -Syyu && sudo pkgfile --update && sudo paccache -r'
+alias upd=' sudo reflector --verbose -l 10 --sort rate --save /etc/pacman.d/mirrorlist && sudo pacman -Syy && sudo pacman -Syyu && sudo pkgfile --update && sudo paccache -r'
 #alias upd='sudo apt update && sudo apt upgrade && sudo apt full-upgrade && sudo apt autoclean'
 alias lswv='ls -ZilhAk'
 alias dnsv='cat /etc/resolv.conf | grep nameserver'
